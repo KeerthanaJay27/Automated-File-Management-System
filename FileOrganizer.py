@@ -2,13 +2,13 @@ import os
 import shutil
 import csv
 
-source = "D:\Automated File Management System"            
-destination = "D:\Automated File Management System\\Sorted_Files" 
+source = r"D:\Automated File Management System Project"            
+destination = r"D:\Automated File Management System Project\Sorted_Files" 
 
-if not os.path.exists(destination):
-    os.mkdir(destination)
+os.makedirs(destination, exist_ok=True)
 
 log_file = os.path.join(destination, "Organized_Files_Report.csv")
+
 if not os.path.exists(log_file):
     with open(log_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -33,30 +33,34 @@ file_types = {
     "CAD / Design Files": [".dwg", ".dxf", ".fig", ".sketch", ".stl", ".obj"]
 }
 
-for file_name in os.listdir(source):
-    file_path = os.path.join(source, file_name)
+count = 0 
 
-    if os.path.isdir(file_path):
-        continue
+with open(log_file, "a", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
 
-    ext = os.path.splitext(file_name)[1].lower()
+    for file_name in os.listdir(source):
+        file_path = os.path.join(source, file_name)
 
-    folder_name = "Others"
-    for category, extensions in file_types.items():
-        if ext in extensions:
-            folder_name = category
-            break
+        if os.path.isdir(file_path) or file_name == "Sorted_Files" or file_name == "Organized_Files_Report.csv":
+            continue
 
-    organized_folder = os.path.join(destination, folder_name)
-    if not os.path.exists(organized_folder):
-        os.mkdir(organized_folder)
+        ext = os.path.splitext(file_name)[1].lower()
 
-    shutil.copy2(file_path, os.path.join(organized_folder, file_name))
+        folder_name = "Others"
+        for category, extensions in file_types.items():
+            if ext in extensions:
+                folder_name = category
+                break
 
-    print(f"Copied {file_name} → {folder_name} (Organized)")
+        organized_folder = os.path.join(destination, folder_name)
+        
+        os.makedirs(organized_folder, exist_ok=True)
 
-    with open(log_file, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([file_name, "Moved"])
+        shutil.copy2(file_path, os.path.join(organized_folder, file_name))
+        
+        count += 1
+        print(f"[{count}] Copied {file_name} → {folder_name}")
 
-print("All files are moved to respective folders. Please check.\nThankYou!!")
+        writer.writerow([file_name, "Copied"])
+
+print(f"\nTask Complete: {count} files backed up and organized.\nThank You!!")
